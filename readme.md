@@ -9,12 +9,16 @@ A fork of farhaven's Acme-Notmuch.
 
 ### Plumb rule
 
-This plumb rule handles email addresses in Notmuch. It matches addresses as well as mailto: links.
+These plumb rules handle email addresses in Notmuch. There is one for mailto: links, and another for raw addresses.
 
 ```
 type is text
-data matches '(mailto:)?([a-zA-Z0-9_+.\-]+@[a-zA-Z0-9_+.\-]*)'
-plumb start Notmuch -addr $2
+data matches 'mailto:([a-zA-Z0-9_+.\-]+@[a-zA-Z0-9_+.\-]*)'
+plumb start Notmuch -addr $1
+
+type is text
+data matches '[a-zA-Z0-9_+.\-]+@[a-zA-Z0-9_+.\-]*'
+plumb start Notmuch -addr $0
 ```
 
 ---
