@@ -1,3 +1,26 @@
+# Notmuch (for Acme)
+
+A fork of farhaven's Acme-Notmuch.
+
+## Changes
+
+- Renamed module to Notmuch
+- Adds the ability to compose a new message to an address by passing the address with the -addr flag
+
+### Plumb rule
+
+This plumb rule handles email addresses in Notmuch. It matches addresses as well as mailto: links.
+
+```
+type is text
+data matches '(mailto:)?([a-zA-Z0-9_+.\-]+@[a-zA-Z0-9_+.\-]*)'
+plumb start Notmuch -addr $2
+```
+
+---
+
+# Original readme:
+
 # Acme-Notmuch
 
 This is a WIP mail reader for Acme, using Notmuch as the mail storage and query engine.
