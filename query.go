@@ -15,14 +15,14 @@ import (
 const _maxSubjectLen = 60
 
 type QueryResult struct {
-	Thread       string
-	Timestamp    int    // Unix timestamp
+	Thread string
+	Timestamp int // Unix timestamp
 	DateRelative string `json:"date_relative"` // Should probably be parsed as a real time?
-	Subject      string
-	Tags         []string
-	Query        []string // Query to run to get this exact thread?
-	Matched      int      // How many messages in the thread matched the query
-	Total        int      // Total number of messages in the thread?
+	Subject string
+	Tags []string
+	Query []string // Query to run to get this exact thread?
+	Matched int // How many messages in the thread matched the query
+	Total int // Total number of messages in the thread?
 }
 
 func (q QueryResult) String() string {
