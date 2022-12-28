@@ -13,7 +13,7 @@ import (
 	"9fans.net/go/acme"
 	"github.com/pkg/errors"
 
-	"github.com/farhaven/acme-notmuch/message"
+	"github.com/VictoriaLacroix/Notmuch/message"
 )
 
 // Set to false to disable removal of "unread" tag on message open
