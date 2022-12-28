@@ -27,6 +27,12 @@ Subject:
 
 `
 
+const composeTemplate = `From:
+To: %s
+Subject:
+
+`
+
 func sendMessage(win *acme.Win) error {
 	body, err := win.ReadAll("body")
 	if err != nil {
@@ -73,7 +79,7 @@ func composeMessage(wg *sync.WaitGroup, initialText string) {
 		return
 	}
 
-	err = win.Fprintf("tag", "Send |fmt ")
+	err = win.Fprintf("tag", " Send |fmt ")
 	if err != nil {
 		win.Errf("can't update tag: %s", err)
 		return
@@ -101,6 +107,7 @@ func composeMessage(wg *sync.WaitGroup, initialText string) {
 					win.Errf("Can't send message: %s", err)
 				} else {
 					// win.Err("message sent")
+					win.Del(true)
 				}
 			default:
 				err := win.WriteEvent(evt)

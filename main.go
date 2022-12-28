@@ -24,6 +24,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"strings"
 	"sync"
@@ -33,10 +34,12 @@ import (
 
 var (
 	_query string
+	_addr string
 )
 
 func init() {
 	flag.StringVar(&_query, "query", "tag:unread and not tag:openbsd", "initial query")
+	flag.StringVar(&_addr, "addr", "", "new envelope address")
 }
 
 func newWin(name, tag string) (*acme.Win, error) {
@@ -107,8 +110,8 @@ func getCommandArgs(evt *acme.Event) (string, string) {
 func handleCommand(wg *sync.WaitGroup, win *acme.Win, evt *acme.Event) error {
 	cmd, arg := getCommandArgs(evt)
 
-	switch {
-	case cmd == "Query":
+	switch cmd {
+	case "Query":
 		wg.Add(1)
 
 		go func() {
@@ -119,9 +122,11 @@ func handleCommand(wg *sync.WaitGroup, win *acme.Win, evt *acme.Event) error {
 		}()
 
 		return nil
-	case cmd == "Compose":
+	case "Compose":
 		wg.Add(1)
 		go composeMessage(wg, newMailTemplate)
+
+		return nil
 	}
 
 	return errNotACommand
@@ -131,11 +136,17 @@ func main() {
 	flag.Parse()
 
 	var wg sync.WaitGroup
+	var initialText string
 	wg.Add(1)
 
-	err := displayQueryResult(&wg, _query)
-	if err != nil {
-		log.Panicf("can't run query: %s", err)
+	if _addr != "" {
+		initialText = fmt.Sprintf(composeTemplate, _addr)
+		go composeMessage(&wg, initialText)
+	} else {
+		err := displayQueryResult(&wg, _query)
+		if err != nil {
+			log.Panicf("can't run query: %s", err)
+		}
 	}
 
 	wg.Wait()
