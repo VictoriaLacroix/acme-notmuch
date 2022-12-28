@@ -139,5 +139,4 @@ func main() {
 	}
 
 	wg.Wait()
-	log.Println("bye")
 }

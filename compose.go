@@ -49,7 +49,7 @@ func sendMessage(win *acme.Win) error {
 }
 
 func composeReply(wg *sync.WaitGroup, win *acme.Win, messageID string) error {
-	win.Errf("composing reply for %s", messageID)
+	// win.Errf("composing reply for %s", messageID)
 
 	cmd := exec.Command("notmuch", "reply", "id:"+messageID)
 
@@ -100,7 +100,7 @@ func composeMessage(wg *sync.WaitGroup, initialText string) {
 				if err != nil {
 					win.Errf("Can't send message: %s", err)
 				} else {
-					win.Err("message sent")
+					// win.Err("message sent")
 				}
 			default:
 				err := win.WriteEvent(evt)

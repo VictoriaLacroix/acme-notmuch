@@ -68,8 +68,8 @@ type MessagePartRFC822 struct {
 func (m MessagePartRFC822) Render() string {
 	var ret []string
 
-	log.Println("TODO: Better rendering of headers")
-	log.Println("TODO: Print separator???")
+	// log.Println("TODO: Better rendering of headers")
+	// log.Println("TODO: Print separator???")
 
 	for k, v := range m.Headers {
 		ret = append(ret, k+":\t"+v)
@@ -99,7 +99,7 @@ func (m MessagePartMultipleRFC822) Render() string {
 type MessagePartMultipartAlternative []MessagePart
 
 func (m MessagePartMultipartAlternative) Render() string {
-	log.Println("TODO: Smarter detection of which part to render")
+	// log.Println("TODO: Smarter detection of which part to render")
 
 	showIdx := 0
 
