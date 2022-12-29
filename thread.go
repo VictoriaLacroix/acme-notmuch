@@ -245,7 +245,7 @@ func look(wg *sync.WaitGroup, win *acme.Win, ids IDMap, text string) error {
 func displayThread(wg *sync.WaitGroup, threadID string) {
 	defer wg.Done()
 
-	win, err := newWin("/Mail/thread/"+threadID, "Get")
+	win, err := newWin("/Mail/thread/"+threadID, "Get [Tag -inbox]")
 	if err != nil {
 		win.Errf("can't open thread display window for %s: %s", threadID, err)
 		return
@@ -274,7 +274,9 @@ func displayThread(wg *sync.WaitGroup, threadID string) {
 
 		switch evt.C2 {
 		case 'x', 'X':
-			switch string(evt.Text) {
+			cmd, arg := getCommandArgs(evt);
+
+			switch cmd {
 			case "Get":
 				idMap, err = refreshThread(win, threadID)
 				if err != nil {
@@ -305,6 +307,22 @@ func displayThread(wg *sync.WaitGroup, threadID string) {
 				} else {
 					lookText = win.Selection()
 				}
+			case "Tag":
+				cmdargs := []string{ "tag" }
+				cmdargs = append(cmdargs, strings.Split(arg, " ")...)
+				cmdargs = append(cmdargs, "--", "thread:" + threadID)
+				res := exec.Command("notmuch", cmdargs...)
+				_, err := res.CombinedOutput()
+				if err != nil {
+					win.Errf("failed to tag: %s", err)
+					continue
+				}
+				// Entire thread was tagged, lets refresh to show
+				idMap, err = refreshThread(win, threadID)
+				if err != nil {
+					win.Errf("can't refresh thread display for %s: %s", threadID, err)
+				}
+				continue
 			default:
 				// Let ACME handle the event
 				err := win.WriteEvent(evt)
