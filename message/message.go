@@ -205,7 +205,7 @@ func (m *MessagePart) UnmarshalJSON(data []byte) error {
 
 		return nil
 	case "image/jpeg":
-		log.Println("skipping image")
+		// log.Println("skipping image")
 		m.Content = nil
 		return nil
 	}
