@@ -245,7 +245,7 @@ func look(wg *sync.WaitGroup, win *acme.Win, ids IDMap, text string) error {
 func displayThread(wg *sync.WaitGroup, threadID string) {
 	defer wg.Done()
 
-	win, err := newWin("/Mail/thread/"+threadID, "Get [Tag -inbox]")
+	win, err := newWin("/Mail/thread/"+threadID, "Get  Tag -inbox")
 	if err != nil {
 		win.Errf("can't open thread display window for %s: %s", threadID, err)
 		return
