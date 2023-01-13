@@ -210,9 +210,9 @@ func (m *MessagePart) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	log.Printf("decoding: %q", partial.Content)
-
-	return fmt.Errorf("not yet: %s", partial.ContentType)
+	//log.Printf("decoding: %q", partial.Content)
+	// fmt.Errorf("not yet: %s", partial.ContentType)
+	return nil
 }
 
 type CryptoState struct {
