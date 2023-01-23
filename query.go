@@ -37,7 +37,7 @@ func (q QueryResult) String() string {
 func refreshQueryResult(win *acme.Win, query string) error {
 	win.Clear()
 
-	err := win.Fprintf("data", "Results of query %q\n\n", query)
+	err := win.Fprintf("data", "Results of [Query %s]\n\n", query)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ var _threadIDRegex = regexp.MustCompile("[0-9a-f]{16}")
 func displayQueryResult(wg *sync.WaitGroup, query string) error {
 	defer wg.Done()
 
-	win, err := newWin("/Mail/query", "Get Query Compose")
+	win, err := newWin("/Mail/query", "Get Compose Query")
 	if err != nil {
 		return err
 	}
