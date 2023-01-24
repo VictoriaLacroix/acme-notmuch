@@ -37,7 +37,7 @@ func (q QueryResult) String() string {
 func refreshQueryResult(win *acme.Win, query string) error {
 	win.Clear()
 
-	err := win.Fprintf("data", "Results of [Query %s]\n\n", query)
+	err := win.Fprintf("data", "Results of query %q\n\n", query)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ var _threadIDRegex = regexp.MustCompile("[0-9a-f]{16}")
 func displayQueryResult(wg *sync.WaitGroup, query string) error {
 	defer wg.Done()
 
-	win, err := newWin("/Mail/query", "Get Compose Query")
+	win, err := newWin("/Mail/query", "Get Query Compose")
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,11 @@ func displayQueryResult(wg *sync.WaitGroup, query string) error {
 		switch evt.C2 {
 		case 'l', 'L':
 		case 'x', 'X':
-			if string(evt.Text) == "Get" {
+			cmd, arg := getCommandArgs(evt)
+			if cmd == "Get" {
+				if arg != "" {
+					query = arg
+				}
 				err = refreshQueryResult(win, query)
 				if err != nil {
 					win.Errf("can't refresh query window: %s", err)
