@@ -40,11 +40,11 @@ func tagMessage(tags string, messageID string) error {
 	return nil
 }
 
-// nextUnread returns the message ID of the next unread message in the same thread as id
-func nextUnread(wg *sync.WaitGroup, win *acme.Win, id string) error {
+// nextMessage returns the message ID of the next unread message in the same thread as id
+func nextMessage(win *acme.Win, id *string, unreadOnly bool) error {
 	// TODO: Handle multiple threads?
 
-	cmd := exec.Command("notmuch", "search", "--format=json", "--output=threads", "id:"+id)
+	cmd := exec.Command("notmuch", "search", "--format=json", "--output=threads", "id:"+ *id)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return err
@@ -80,7 +80,7 @@ func nextUnread(wg *sync.WaitGroup, win *acme.Win, id string) error {
 	foundThisMsg := false
 	foundNextMsg := false
 	for _, entry := range l {
-		if entry.MsgID == id {
+		if entry.MsgID == *id {
 			foundThisMsg = true
 			continue
 		}
@@ -89,9 +89,14 @@ func nextUnread(wg *sync.WaitGroup, win *acme.Win, id string) error {
 			continue
 		}
 
-		if entry.Tags["unread"] {
-			wg.Add(1)
-			go displayMessage(wg, entry.MsgID)
+		if !unreadOnly || entry.Tags["unread"] {
+			// FIXME: Maybe make this less hacky
+			*id = entry.MsgID
+			refreshMessage(*id, win)
+			err = tagMessage("-unread", *id)
+			if err != nil {
+				win.Errf("can't remove 'unread' tag from message %s", id)
+			}
 			foundNextMsg = true
 			break
 		}
@@ -242,7 +247,7 @@ func displayMessage(wg *sync.WaitGroup, messageID string) {
 
 	defer wg.Done()
 
-	win, err := newWin("/Mail/message/"+messageID, "Next Reply [Tag +flagged] [|fmt -w 120]")
+	win, err := newWin("/Mail/message/"+messageID, "Next NextUnread Reply [Tag +flagged] [|fmt -w 120]")
 	if err != nil {
 		win.Errf("can't open message display window for %s: %s", messageID, err)
 		return
@@ -276,8 +281,17 @@ func displayMessage(wg *sync.WaitGroup, messageID string) {
 			cmd, arg := getCommandArgs(evt)
 
 			switch cmd {
+			case "Prev":
+				win.Errf("Not implemented")
+				continue
 			case "Next":
-				err := nextUnread(wg, win, messageID)
+				err := nextMessage(win, &messageID, false)
+				if err != nil {
+					win.Errf("can't jump to next message: %s", err)
+				}
+				continue
+			case "NextUnread":
+				err := nextMessage(win, &messageID, true)
 				if err != nil {
 					win.Errf("can't jump to next unread message: %s", err)
 				}
