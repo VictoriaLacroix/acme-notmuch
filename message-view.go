@@ -253,6 +253,11 @@ func refreshMessage(messageID string, win *acme.Win) error {
 
 	win.Clear()
 
+	err = win.Name("/Mail/message/"+messageID)
+	if err != nil {
+		return fmt.Errorf("rewriting name for win %q: %w", messageID, err)
+	}
+
 	err = writeMessageHeaders(win, msg)
 	if err != nil {
 		return fmt.Errorf("writing headers for %q: %w", messageID, err)
@@ -280,7 +285,7 @@ func displayMessage(wg *sync.WaitGroup, messageID string) {
 
 	defer wg.Done()
 
-	win, err := newWin("/Mail/message/"+messageID, "Prev Next NextUnread Reply [Tag +flagged] [|fmt -w 120]")
+	win, err := newWin("/Mail/message/"+messageID, "\nPrev Next NextUnread Reply Tag +flagged  |fmt ")
 	if err != nil {
 		win.Errf("can't open message display window for %s: %s", messageID, err)
 		return
