@@ -54,6 +54,8 @@ type ThreadEntry interface {
 
 	// PreOrder returns a traversal of the thread entry in pre-order.
 	PreOrder() []TagSet
+	// PostOrder returns a traversal of the thread entry in post-order.
+	PostOrder() []TagSet
 }
 
 // A thread is a list of child threads or messages
@@ -126,6 +128,18 @@ func (t Thread) PreOrder() []TagSet {
 	return ret
 }
 
+func (t Thread) PostOrder() []TagSet {
+	var ret []TagSet
+
+	ret = t.PreOrder()
+
+	for i, j := 0, len(ret) - 1; i < j; i, j = i+1, j-1 {
+		ret[i], ret[j] = ret[j], ret[i]
+	}
+
+	return ret
+}
+
 type ThreadMessage struct {
 	ID           string
 	Match        bool
@@ -176,6 +190,11 @@ func (t ThreadMessage) PreOrder() []TagSet {
 	return []TagSet{
 		{MsgID: t.ID, Tags: tags},
 	}
+}
+
+// TODO: What?
+func (t ThreadMessage) PostOrder() []TagSet {
+	return t.PreOrder()
 }
 
 func refreshThread(win *acme.Win, threadID string) (IDMap, error) {

@@ -40,43 +40,44 @@ func tagMessage(tags string, messageID string) error {
 	return nil
 }
 
-// nextMessage returns the message ID of the next unread message in the same thread as id
-func nextMessage(win *acme.Win, id *string, unreadOnly bool) error {
+func getThread(id string) (Thread, error) {
 	// TODO: Handle multiple threads?
 
-	cmd := exec.Command("notmuch", "search", "--format=json", "--output=threads", "id:"+ *id)
+	cmd := exec.Command("notmuch", "search", "--format=json", "--output=threads", "id:"+ id)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var threadIDs []string
 	err = json.Unmarshal(output, &threadIDs)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if len(threadIDs) == 0 {
-		return errors.New("can't find thread for message")
+		return nil, errors.New("can't find thread for message")
 	} else if len(threadIDs) > 1 {
-		return errors.New("more than one thread id for message")
+		return nil, errors.New("more than one thread id for message")
 	}
 
 	// Get thread for the message
 	cmd = exec.Command("notmuch", "show", "--format=json", "--body=false", "thread:"+threadIDs[0])
 	output, err = cmd.CombinedOutput()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var thread Thread
 	err = json.Unmarshal(output, &thread)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	l := thread.PreOrder()
+	return thread, nil
+}
 
+func traverseTagSet(win *acme.Win, id *string, l []TagSet, unreadOnly bool) error {
 	foundThisMsg := false
 	foundNextMsg := false
 	for _, entry := range l {
@@ -93,7 +94,7 @@ func nextMessage(win *acme.Win, id *string, unreadOnly bool) error {
 			// FIXME: Maybe make this less hacky
 			*id = entry.MsgID
 			refreshMessage(*id, win)
-			err = tagMessage("-unread", *id)
+			err := tagMessage("-unread", *id)
 			if err != nil {
 				win.Errf("can't remove 'unread' tag from message %s", id)
 			}
@@ -111,6 +112,38 @@ func nextMessage(win *acme.Win, id *string, unreadOnly bool) error {
 	}
 
 	return nil
+}
+
+// prevMessage returns the message ID of the previous message in the same thread as id
+func prevMessage(win *acme.Win, id *string, unreadOnly bool) error {
+	thread, err := getThread(*id)
+
+	if err != nil {
+		return err
+	}
+	if thread == nil {
+		return errors.New("No thread")
+	}
+
+	l := thread.PostOrder()
+
+	return traverseTagSet(win, id, l, unreadOnly)
+}
+
+// nextMessage returns the message ID of the next message in the same thread as id
+func nextMessage(win *acme.Win, id *string, unreadOnly bool) error {
+	thread, err := getThread(*id)
+
+	if err != nil {
+		return err
+	}
+	if thread == nil {
+		return errors.New("No thread")
+	}
+
+	l := thread.PreOrder()
+
+	return traverseTagSet(win, id, l, unreadOnly)
 }
 
 func getAllHeaders(root message.Root) (mail.Header, error) {
@@ -247,7 +280,7 @@ func displayMessage(wg *sync.WaitGroup, messageID string) {
 
 	defer wg.Done()
 
-	win, err := newWin("/Mail/message/"+messageID, "Next NextUnread Reply [Tag +flagged] [|fmt -w 120]")
+	win, err := newWin("/Mail/message/"+messageID, "Prev Next NextUnread Reply [Tag +flagged] [|fmt -w 120]")
 	if err != nil {
 		win.Errf("can't open message display window for %s: %s", messageID, err)
 		return
@@ -282,7 +315,10 @@ func displayMessage(wg *sync.WaitGroup, messageID string) {
 
 			switch cmd {
 			case "Prev":
-				win.Errf("Not implemented")
+				err := prevMessage(win, &messageID, false)
+				if err != nil {
+					win.Errf("can't jump to prev message: %s", err)
+				}
 				continue
 			case "Next":
 				err := nextMessage(win, &messageID, false)
