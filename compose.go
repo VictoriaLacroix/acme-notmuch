@@ -54,10 +54,10 @@ func sendMessage(win *acme.Win) error {
 	return nil
 }
 
-func composeReply(wg *sync.WaitGroup, win *acme.Win, messageID string) error {
+func composeReply(wg *sync.WaitGroup, win *acme.Win, messageID string, replyToArg string) error {
 	// win.Errf("composing reply for %s", messageID)
 
-	cmd := exec.Command("notmuch", "reply", "id:"+messageID)
+	cmd := exec.Command("notmuch", "reply", replyToArg, "id:"+messageID)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {

@@ -285,7 +285,7 @@ func displayMessage(wg *sync.WaitGroup, messageID string) {
 
 	defer wg.Done()
 
-	win, err := newWin("/Mail/message/"+messageID, "\nPrev Next NextUnread Reply Tag +flagged  |fmt ")
+	win, err := newWin("/Mail/message/"+messageID, "\nPrev Next NextUnread Reply ReplyAll Tag +flagged  |fmt ")
 	if err != nil {
 		win.Errf("can't open message display window for %s: %s", messageID, err)
 		return
@@ -338,11 +338,16 @@ func displayMessage(wg *sync.WaitGroup, messageID string) {
 				}
 				continue
 			case "Reply":
-				err := composeReply(wg, win, messageID)
+				err := composeReply(wg, win, messageID, "--reply-to=sender")
 				if err != nil {
 					win.Errf("can't compose reply: %s", err)
 				}
 				continue
+			case "ReplyAll":
+				err := composeReply(wg, win, messageID, "--reply-to=all")
+				if err != nil {
+					win.Errf("can't compose reply all: %s", err)
+				}
 			case "Tag":
 				err := tagMessage(arg, messageID)
 				if err != nil {
