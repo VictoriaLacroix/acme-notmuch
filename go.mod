@@ -1,4 +1,4 @@
-module github.com/VictoriaLacroix/Notmuch
+module github.com/VictoriaLacroix/acme-notmuch
 
 go 1.13
 

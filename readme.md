@@ -1,11 +1,14 @@
-# Notmuch (for Acme)
+# Acme-Notmuch
 
-A fork of farhaven's Acme-Notmuch.
+A fork of [farhaven/acme-notmuch](https://github.com/farhaven/acme-notmuch).
 
 ## Changes
 
-- Renamed module to Notmuch
 - Adds the ability to compose a new message to an address by passing the address with the -addr flag
+- Prev/Next/NextUnread commands to page emails in a thread in-place. The message being viewed is replaced by the previous/next/next unread message in a thread
+- Reply/ReplyAll commands for replying
+- Tag messages as "replied" once a reply has been sent
+- Removed a lot of the debug logging and pointless error paths (such as an error window for failing to render certain MIME types)
 
 ### Plumb rule
 
@@ -14,16 +17,16 @@ These plumb rules handle email addresses in Notmuch. There is one for mailto: li
 ```
 type is text
 data matches 'mailto:([a-zA-Z0-9_+.\-]+@[a-zA-Z0-9_+.\-]*)'
-plumb start Notmuch -addr $1
+plumb start acme-notmuch -addr $1
 
 type is text
 data matches '[a-zA-Z0-9_+.\-]+@[a-zA-Z0-9_+.\-]*'
-plumb start Notmuch -addr $0
+plumb start acme-notmuch -addr $0
 ```
 
 ---
 
-# Original readme:
+# Original Readme
 
 # Acme-Notmuch
 
@@ -31,10 +34,10 @@ This is a WIP mail reader for Acme, using Notmuch as the mail storage and query 
 
 There are a few things missing that are required to make this useful:
 
-* [ ] Removing the `unread` tag from read messages
-* [ ] Mail authoring
-	* [ ] Reply to some mail
-	* [ ] Write an initial mail
+* [x] Removing the `unread` tag from read messages
+* [x] Mail authoring
+	* [x Reply to some mail
+	* [x] Write an initial mail
 * [ ] Listing and saving attachments
 * [ ] Spam handling with bogofilter
 	* [ ] Mark messages as Ham/Spam
