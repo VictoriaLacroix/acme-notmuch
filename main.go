@@ -124,7 +124,7 @@ func handleCommand(wg *sync.WaitGroup, win *acme.Win, evt *acme.Event) error {
 		return nil
 	case "Compose":
 		wg.Add(1)
-		go composeMessage(wg, newMailTemplate)
+		go composeMessage(wg, newMailTemplate, "")
 
 		return nil
 	}
@@ -141,7 +141,7 @@ func main() {
 
 	if _addr != "" {
 		initialText = fmt.Sprintf(composeTemplate, _addr)
-		go composeMessage(&wg, initialText)
+		go composeMessage(&wg, initialText, "")
 	} else {
 		err := displayQueryResult(&wg, _query)
 		if err != nil {

@@ -65,12 +65,27 @@ func composeReply(wg *sync.WaitGroup, win *acme.Win, messageID string, replyToAr
 	}
 
 	wg.Add(1)
-	go composeMessage(wg, string(output))
+	go composeMessage(wg, string(output), messageID)
 
 	return nil
 }
 
-func composeMessage(wg *sync.WaitGroup, initialText string) {
+func markReplied(messageID string) error {
+	cmd := exec.Command("notmuch", "tag", "+replied", "id:"+messageID)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("notmuch-tag: %w", err)
+	}
+	if len(output) > 0 {
+		return fmt.Errorf("output from notmuch: %q", output)
+	}
+
+	return nil
+}
+
+// FIXME: 'inReplyTo' is pretty hacky
+func composeMessage(wg *sync.WaitGroup, initialText string, inReplyTo string) {
 	defer wg.Done()
 
 	win, err := newWin("/Mail/newMessage", "TODO")
@@ -105,10 +120,13 @@ func composeMessage(wg *sync.WaitGroup, initialText string) {
 				err := sendMessage(win)
 				if err != nil {
 					win.Errf("Can't send message: %s", err)
-				} else {
-					// win.Err("message sent")
-					win.Del(true)
+					continue
 				}
+				err = markReplied(inReplyTo)
+				if err != nil {
+					win.Errf("Can't mark replied: %s", err)
+				}
+				win.Del(true)
 			default:
 				err := win.WriteEvent(evt)
 				if err != nil {
