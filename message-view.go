@@ -285,7 +285,7 @@ func displayMessage(wg *sync.WaitGroup, messageID string) {
 
 	defer wg.Done()
 
-	win, err := newWin("/Mail/message/"+messageID, "\nPrev Next NextUnread Reply ReplyAll Tag +flagged  |fmt ")
+	win, err := newWin("/Mail/message/"+messageID, "\nPrev Next NextUnread Reply ReplyAll +flagged |fmt ")
 	if err != nil {
 		win.Errf("can't open message display window for %s: %s", messageID, err)
 		return
@@ -317,7 +317,13 @@ func displayMessage(wg *sync.WaitGroup, messageID string) {
 		switch evt.C2 {
 		case 'x', 'X':
 			cmd, arg := getCommandArgs(evt)
-
+			if strings.HasPrefix(cmd, "-") || strings.HasPrefix(cmd, "+") {
+				err := tagMessage(cmd, messageID)
+				if err != nil {
+					win.Errf("can't tag: %s", err)
+				}
+				continue
+			}
 			switch cmd {
 			case "Prev":
 				err := prevMessage(win, &messageID, false)
@@ -348,6 +354,7 @@ func displayMessage(wg *sync.WaitGroup, messageID string) {
 				if err != nil {
 					win.Errf("can't compose reply all: %s", err)
 				}
+				continue
 			case "Tag":
 				err := tagMessage(arg, messageID)
 				if err != nil {
